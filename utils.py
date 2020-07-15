@@ -3,22 +3,14 @@
 Most codes from https://github.com/carpedm20/DCGAN-tensorflow
 """
 from __future__ import division
-import math
-import random
-import pprint
-import scipy.misc
-import scipy as sp
-import scipy.io
+import imageio
 import numpy as np
 from glob import glob
 import sys
 import pickle
-from time import gmtime, strftime
-#from six.moves import xrange
 import matplotlib.pyplot as plt
-import lmdb
-import os, gzip
-from scipy.io import loadmat
+import os
+from PIL import Image
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -29,7 +21,7 @@ img_path_test = "validation/img"
 sound_path_test = "validation/LMS"
 input_fname_pattern = '*.jpg'
 input_sounds_pattern = '*.png'
-data_path = "/media/media/9EA2104DA2102BF1/creat-TwistedW/CMAV/data"
+data_path = "data"
 seed_num = 548
 
 def load_Sub(dataset_name, n_classes):
@@ -73,19 +65,19 @@ def load_Sub(dataset_name, n_classes):
     data_mis_X = np.concatenate((data_mis_X, L4), axis=0)
     data_mis_X = np.concatenate((data_mis_X, L12), axis=0)
 
-    S1 = glob(os.path.join(data_path, dataset_name, sound_path, "bassoon_lms", input_sounds_pattern))
-    S2 = glob(os.path.join(data_path, dataset_name, sound_path, "cello_lms", input_sounds_pattern))
-    S3 = glob(os.path.join(data_path, dataset_name, sound_path, "clarinet_lms", input_sounds_pattern))
-    S4 = glob(os.path.join(data_path, dataset_name, sound_path, "double_bass_lms", input_sounds_pattern))
-    S5 = glob(os.path.join(data_path, dataset_name, sound_path, "flute_lms", input_sounds_pattern))
-    S6 = glob(os.path.join(data_path, dataset_name, sound_path, "horn_lms", input_sounds_pattern))
-    S7 = glob(os.path.join(data_path, dataset_name, sound_path, "oboe_lms", input_sounds_pattern))
-    S8 = glob(os.path.join(data_path, dataset_name, sound_path, "sax_lms", input_sounds_pattern))
-    S9 = glob(os.path.join(data_path, dataset_name, sound_path, "trombone_lms", input_sounds_pattern))
-    S10 = glob(os.path.join(data_path, dataset_name, sound_path, "trumpet_lms", input_sounds_pattern))
-    S11 = glob(os.path.join(data_path, dataset_name, sound_path, "tuba_lms", input_sounds_pattern))
-    S12 = glob(os.path.join(data_path, dataset_name, sound_path, "viola_lms", input_sounds_pattern))
-    S13 = glob(os.path.join(data_path, dataset_name, sound_path, "violin_lms", input_sounds_pattern))
+    S1 = glob(os.path.join(data_path, dataset_name, sound_path, "bassoon", input_sounds_pattern))
+    S2 = glob(os.path.join(data_path, dataset_name, sound_path, "cello", input_sounds_pattern))
+    S3 = glob(os.path.join(data_path, dataset_name, sound_path, "clarinet", input_sounds_pattern))
+    S4 = glob(os.path.join(data_path, dataset_name, sound_path, "double_bass", input_sounds_pattern))
+    S5 = glob(os.path.join(data_path, dataset_name, sound_path, "flute", input_sounds_pattern))
+    S6 = glob(os.path.join(data_path, dataset_name, sound_path, "horn", input_sounds_pattern))
+    S7 = glob(os.path.join(data_path, dataset_name, sound_path, "oboe", input_sounds_pattern))
+    S8 = glob(os.path.join(data_path, dataset_name, sound_path, "sax", input_sounds_pattern))
+    S9 = glob(os.path.join(data_path, dataset_name, sound_path, "trombone", input_sounds_pattern))
+    S10 = glob(os.path.join(data_path, dataset_name, sound_path, "trumpet", input_sounds_pattern))
+    S11 = glob(os.path.join(data_path, dataset_name, sound_path, "tuba", input_sounds_pattern))
+    S12 = glob(os.path.join(data_path, dataset_name, sound_path, "viola", input_sounds_pattern))
+    S13 = glob(os.path.join(data_path, dataset_name, sound_path, "violin", input_sounds_pattern))
 
     data_s = np.concatenate((S1, S2), axis=0)
     data_s = np.concatenate((data_s, S3), axis=0)
@@ -388,9 +380,9 @@ def save_images(images, size, image_path):
 
 def imread(path, grayscale=False):
     if (grayscale):
-        return scipy.misc.imread(path, flatten=True).astype(np.float)
+        return imageio.imread(path, flatten=True).astype(np.float)
     else:
-        return scipy.misc.imread(path).astype(np.float)
+        return imageio.imread(path).astype(np.float)
 
 def merge_images(images, size):
     return inverse_transform(images)
@@ -417,7 +409,7 @@ def merge(images, size):
 
 def imsave(images, size, path):
     image = np.squeeze(merge(images, size))
-    return scipy.misc.imsave(path, image)
+    return imageio.imwrite(path, image)
 
 def center_crop(x, crop_h, crop_w, resize_h=64, resize_w=64):
     if crop_w is None:
@@ -425,13 +417,13 @@ def center_crop(x, crop_h, crop_w, resize_h=64, resize_w=64):
     h, w = x.shape[:2]
     j = int(round((h - crop_h)/2.))
     i = int(round((w - crop_w)/2.))
-    return scipy.misc.imresize(x[j:j+crop_h, i:i+crop_w], [resize_h, resize_w])
+    return np.array(Image.fromarray(x[j:j+crop_h, i:i+crop_w].astype(np.uint8)).resize([resize_h, resize_w]))
 
 def transform(image, input_height, input_width, resize_height=64, resize_width=64, crop=True):
     if crop:
         cropped_image = center_crop(image, input_height, input_width, resize_height, resize_width)
     else:
-        cropped_image = scipy.misc.imresize(image, [resize_height, resize_width])
+        cropped_image = np.array(Image.fromarray(image.astype(np.uint8)).resize([resize_height, resize_width]))
     return np.array(cropped_image)/127.5 - 1.
 
 def inverse_transform(images):
@@ -465,7 +457,7 @@ def discrete_cmap(N, base_cmap=None):
     cmap_name = base.name + str(N)
     return base.from_list(cmap_name, color_list, N)
 
-def get_pix_image(Image, random_index, ih=108, iw=130, oh=64, ow=64):
+def get_pix_image(Image, random_index, ih=64, iw=64, oh=64, ow=64):
     batch_images_files = Image[random_index]
     batch_I = [
         get_image(batch_file,

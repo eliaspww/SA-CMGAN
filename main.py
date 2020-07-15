@@ -89,10 +89,10 @@ def main():
         # declare instance for GAN
         if args.gan_type == 'I2S':
             gan = I2S(sess, epoch=args.epoch, batch_size=args.batch_size, z_dim=args.z_dim,dataset_name=args.dataset,
-                         checkpoint_dir=args.checkpoint_dir, result_dir=args.result_dir, log_dir=args.log_dir,test_dir=args.test_dir)
+                         checkpoint_dir=args.checkpoint_dir, result_dir=args.result_dir, log_dir=args.log_dir,test_dir=args.test_dir, replace=False)
         elif args.gan_type == 'S2I':
             gan = S2I(sess, epoch=args.epoch, batch_size=args.batch_size, z_dim=args.z_dim,dataset_name=args.dataset,
-                         checkpoint_dir=args.checkpoint_dir, result_dir=args.result_dir, log_dir=args.log_dir,test_dir=args.test_dir)
+                         checkpoint_dir=args.checkpoint_dir, result_dir=args.result_dir, log_dir=args.log_dir,test_dir=args.test_dir, replace=False)
         else:
             raise Exception("[!] There is no option for " + args.gan_type)
 

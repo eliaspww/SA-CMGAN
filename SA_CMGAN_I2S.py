@@ -11,7 +11,7 @@ from ops import *
 from utils import *
 
 class I2S(object):
-    def __init__(self, sess, epoch, batch_size, z_dim, dataset_name, checkpoint_dir, result_dir, log_dir, test_dir):
+    def __init__(self, sess, epoch, batch_size, z_dim, dataset_name, checkpoint_dir, result_dir, log_dir, test_dir, replace):
         self.sess = sess
         self.dataset_name = dataset_name
         self.checkpoint_dir = checkpoint_dir
@@ -23,11 +23,12 @@ class I2S(object):
         self.model_name = "I2S"     # name for checkpoint
         self.n_critic = 2
         self.pretrian_step = 4
+        self.replace = replace
 
         if dataset_name == 'Sub-URMP':
             # parameters
-            self.input_height = 108
-            self.input_width = 130
+            self.input_height = 64
+            self.input_width = 64
             self.output_height = 64
             self.output_width = 64
 
@@ -287,7 +288,7 @@ class I2S(object):
             print("pre_training Classifier")
             for epoch in range(0, self.pretrian_step):
                 for idc in range(start_batch_id, self.num_batches):
-                    random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=False)
+                    random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=self.replace)
                     labels = np.array(self.data_y)[random_index]
                     batch_images = get_pix_image(self.data_X, random_index)
                     batch_sounds = get_sound(self.data_S, random_index)
@@ -324,7 +325,7 @@ class I2S(object):
             # get batch data
             for idx in range(start_batch_id, self.num_batches):
                 batch_z = np.random.normal(0, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-                random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=False)
+                random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=self.replace)
                 batch_images = get_pix_image(self.data_X, random_index)
                 batch_sounds = get_sound(self.data_S, random_index)
                 batch_mis_sounds = get_sound(self.data_MIS_S, random_index)
@@ -387,7 +388,7 @@ class I2S(object):
 
     def visualize_results(self, epoch, idx):
         z_sample = np.random.normal(0, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-        random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=False)
+        random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=self.replace)
         batch_labels = np.array(self.data_y)[random_index]
         batch_images = get_pix_image(self.data_X, random_index)
         batch_sounds = get_sound(self.data_S, random_index)
@@ -439,7 +440,7 @@ class I2S(object):
         test_x, test_sounds, test_img_mis, test_sounds_mis, test_y = load_Sub_test(self.dataset_name, self.y_dim)
         dataset_num = len(test_x)
         z_sample = np.random.normal(0, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-        random_index = np.random.choice(dataset_num, size=self.batch_size, replace=False)
+        random_index = np.random.choice(dataset_num, size=self.batch_size, replace=self.replace)
         batch_labels = np.array(test_y)[random_index]
         batch_images = get_pix_image(test_x, random_index)
         batch_sounds = get_sound(test_sounds, random_index)
@@ -491,7 +492,7 @@ class I2S(object):
 
     def visualize_paper(self, epoch):
         z_sample = np.random.normal(0, 1, [self.batch_size, self.z_dim]).astype(np.float32)
-        random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=False)
+        random_index = np.random.choice(self.dataset_num, size=self.batch_size, replace=self.replace)
         batch_labels = np.array(self.data_y)[random_index]
         batch_images = get_pix_image(self.data_X, random_index)
         batch_sounds = get_sound(self.data_S, random_index)
